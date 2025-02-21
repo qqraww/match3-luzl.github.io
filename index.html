@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AXION - Испытание Зеркало</title>
+    <style>
+        :root {
+            --blood: #5E0000;
+            --gold: #C5A020;
+            --void: #0A0A0A;
+            --parchment: #EEE5CE;
+        }
+
+        body {
+            background-color: black;
+            color: var(--parchment);
+            font-family: 'Cinzel Decorative', cursive;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .ritual-altar {
+            background: rgba(10,10,10,0.9);
+            padding: 3rem 5rem;
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 30px rgba(90,0,0,0.3);
+            text-align: center;
+        }
+
+        .cipher-input {
+            font-size: 2rem;
+            padding: 1rem 2rem;
+            margin: 2rem 0;
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--parchment);
+            text-align: center;
+            letter-spacing: 0.5rem;
+            transition: 0.3s;
+            width: 300px;
+        }
+
+        .error-message {
+            color: var(--blood);
+            height: 1.5rem;
+            margin-top: 1rem;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .submit-btn {
+            background: var(--blood);
+            color: var(--parchment);
+            padding: 1rem 3rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="ritual-altar">
+        <h2>ИСПЫТАНИЕ ВТОРОЕ: ВЗГЛЯД В ПРОТИВОПОЛОЖНОСТЬ. НАЙДИ ЗВЕРЯ</h2>
+        <H1 style="color: #080808;">6</H1>
+        <input type="text" class="cipher-input" id="codeInput" 
+               placeholder="3 3 0 1" maxlength="7"
+               oninput="formatInput(this)">
+        <div class="error-message" id="errorMsg">Неверный код! Повторите попытку</div>
+        <button class="submit-btn" onclick="checkCode()">СОВЕРШИТЬ ОБРЯД</button>
+    </div>
+
+    <script>
+        function checkCode() {
+            const input = document.getElementById('codeInput');
+            const errorMsg = document.getElementById('errorMsg');
+            const rawValue = input.value.replace(/\s/g, '');
+            
+            if(rawValue === '1033') {
+                window.location.href = 'https://vk.com/club229478724'; // Обманка
+            } 
+            else if(rawValue === '666') {
+                window.location.href = 'https://t.me/+i3cCzUiddXU5Y2Ri'; // Настоящая группа
+            }
+            else {
+                errorMsg.style.opacity = '1';
+                input.style.animation = 'shake 0.4s';
+                setTimeout(() => {
+                    input.style.animation = '';
+                    errorMsg.style.opacity = '0';
+                }, 2000);
+                input.value = '';
+            }
+        }
+        function formatInput(input) { /* ... */ }
+    </script>
+</body>
+</html>
