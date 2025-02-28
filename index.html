@@ -1,109 +1,2013 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AXION - Испытание Зеркало</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawaii Anime Match-3</title>
     <style>
-        :root {
-            --blood: #5E0000;
-            --gold: #C5A020;
-            --void: #0A0A0A;
-            --parchment: #EEE5CE;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: black;
-            color: var(--parchment);
-            font-family: 'Cinzel Decorative', cursive;
+            background-color: #ffcce6;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+CjxyZWN0IHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgZmlsbD0ibm9uZSIvPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIxIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+');
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
             min-height: 100vh;
+            touch-action: manipulation;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header styles */
+        header {
+            width: 100%;
+            background-color: #ff80bf;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            text-shadow: 2px 2px 0px #d64a91;
+            font-size: 28px;
+        }
+
+        /* Game container */
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+
+        /* Info panel */
+        .info-panel {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .level-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .level-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff4da6;
+        }
+
+        .level-target {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .score-info {
+            text-align: right;
+        }
+
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4da6;
+        }
+
+        .moves-left {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Game board */
+        .game-board {
+            background-color: #ffd6eb;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 5px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .cell.selected {
+            transform: scale(0.9);
+            box-shadow: 0 0 0 3px #ff80bf;
+            z-index: 2;
+        }
+
+        .cell.hint {
+            animation: pulse 1.5s infinite;
+        }
+
+        .cell.matched {
+            animation: pop 0.4s forwards;
+        }
+
+        .cell img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Buttons */
+        .game-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #ff80bf;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(255, 77, 166, 0.3);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(255, 77, 166, 0.3);
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal h2 {
+            color: #ff4da6;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .stars {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .star {
+            font-size: 30px;
+            color: #ddd;
+        }
+
+        .star.filled {
+            color: #ffcc00;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ff80bf, #ff4da6);
+            width: 0%;
+            transition: width 0.5s;
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            70% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 128, 191, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(255, 128, 191, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 128, 191, 0);
+            }
+        }
+
+        /* Levels screen */
+        .levels-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .level-button {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-        }
-
-        .ritual-altar {
-            background: rgba(10,10,10,0.9);
-            padding: 3rem 5rem;
-            border: 3px solid var(--gold);
-            box-shadow: 0 0 30px rgba(90,0,0,0.3);
-            text-align: center;
-        }
-
-        .cipher-input {
-            font-size: 2rem;
-            padding: 1rem 2rem;
-            margin: 2rem 0;
-            background: transparent;
-            border: 2px solid var(--gold);
-            color: var(--parchment);
-            text-align: center;
-            letter-spacing: 0.5rem;
-            transition: 0.3s;
-            width: 300px;
-        }
-
-        .error-message {
-            color: var(--blood);
-            height: 1.5rem;
-            margin-top: 1rem;
-            opacity: 0;
-            transition: 0.3s;
-        }
-
-        .submit-btn {
-            background: var(--blood);
-            color: var(--parchment);
-            padding: 1rem 3rem;
-            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            font-family: inherit;
-            font-size: 1.2rem;
-            transition: 0.3s;
+            transition: transform 0.2s;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        .level-button:active {
+            transform: scale(0.95);
+        }
+
+        .level-button.locked {
+            background-color: #f0f0f0;
+            color: #999;
+            position: relative;
+        }
+
+        .level-button.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+        }
+
+        .level-number-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4da6;
+            margin-bottom: 5px;
+        }
+
+        .level-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .level-star {
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .level-star.filled {
+            color: #ffcc00;
+        }
+
+        /* Start screen */
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            max-width: 500px;
+            min-height: 60vh;
+        }
+
+        .game-logo {
+            font-size: 36px;
+            color: #ff4da6;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .start-button {
+            font-size: 20px;
+            padding: 15px 50px;
+            margin: 20px 0;
+            background: linear-gradient(to right, #ff80bf, #ff4da6);
+        }
+
+        /* Bonus items */
+        .bonus-item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 5;
+            animation: float 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Power-ups */
+        .power-ups {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .power-up {
+            background-color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .power-up:active {
+            transform: scale(0.9);
+        }
+
+        .power-up img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+        }
+
+        .power-up-count {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: #ff4da6;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .power-up.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .info-panel {
+                padding: 10px;
+            }
+
+            .level-number {
+                font-size: 16px;
+            }
+
+            .score-value {
+                font-size: 20px;
+            }
+
+            .grid {
+                gap: 3px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .modal {
+                padding: 20px;
+            }
+
+            .levels-container {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 10px;
+            }
+        }
+
+        /* Tutorial overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tutorial-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-content h2 {
+            color: #ff4da6;
+            margin-bottom: 15px;
+        }
+
+        .tutorial-content p {
+            margin-bottom: 20px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .tutorial-image {
+            width: 100%;
+            max-width: 200px;
+            margin: 10px auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tutorial-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 50%;
+        }
+
+        .dot.active {
+            background-color: #ff4da6;
+        }
+
+        /* Sound button */
+        .sound-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        .sound-button.muted::after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 30px;
+            background-color: #ff4da6;
+            transform: rotate(45deg);
+        }
+
+        /* Combo text animation */
+        .combo-text {
+            position: absolute;
+            color: #ff4da6;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            animation: combo-anim 1.5s forwards;
+        }
+
+        @keyframes combo-anim {
+            0% {
+                transform: scale(0.5) translateY(0);
+                opacity: 0;
+            }
+            20% {
+                transform: scale(1.2) translateY(0);
+                opacity: 1;
+            }
+            80% {
+                transform: scale(1) translateY(-50px);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translateY(-70px);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="ritual-altar">
-        <h2>ИСПЫТАНИЕ ВТОРОЕ: ВЗГЛЯД В ПРОТИВОПОЛОЖНОСТЬ. НАЙДИ ЗВЕРЯ</h2>
-        <H1 style="color: #080808;">6</H1>
-        <input type="text" class="cipher-input" id="codeInput" 
-               placeholder="3 3 0 1" maxlength="7"
-               oninput="formatInput(this)">
-        <div class="error-message" id="errorMsg">Неверный код! Повторите попытку</div>
-        <button class="submit-btn" onclick="checkCode()">СОВЕРШИТЬ ОБРЯД</button>
+    <header>
+        <h1>Kawaii Anime Match-3</h1>
+        <div class="sound-button"></div>
+    </header>
+
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <div class="game-logo">✨ Kawaii Match ✨</div>
+        <p>Match 3 or more cute anime icons in this adorable puzzle adventure!</p>
+        <button class="start-button" id="startButton">Start Game</button>
+        <button id="howToPlayButton">How to Play</button>
+    </div>
+
+    <!-- Levels Screen -->
+    <div class="levels-container hidden" id="levelsScreen">
+        <!-- Levels will be generated here -->
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-container hidden" id="gameScreen">
+        <div class="info-panel">
+            <div class="level-info">
+                <div class="level-number">Level <span id="currentLevel">1</span></div>
+                <div class="level-target" id="levelTarget">Match 20 stars</div>
+            </div>
+            <div class="score-info">
+                <div class="score-value" id="scoreValue">0</div>
+                <div class="moves-left"><span id="movesLeft">15</span> moves left</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="game-board">
+            <div class="grid" id="grid">
+                <!-- Grid cells will be generated here -->
+            </div>
+        </div>
+
+        <div class="power-ups">
+            <div class="power-up" id="bombPowerUp">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI4MCIgcj0iMTYwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0yNTYgMTQwQzE3NS4zMDggMTQwIDExMCAyMDUuMzA4IDExMCAyODZDMTEwIDM2Ni42OTIgMTc1LjMwOCA0MzIgMjU2IDQzMkMzMzYuNjkyIDQzMiA0MDIgMzY2LjY5MiA0MDIgMjg2QzQwMiAyMDUuMzA4IDMzNi42OTIgMTQwIDI1NiAxNDAiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMTAiLz4KPHBhdGggZD0iTTI1NiA4MEwyNTYgMTIwIiBzdHJva2U9IiNGRjQ0NDQiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNMzAwIDYwTDI3MCA4MCIgc3Ryb2tlPSIjRkY0NDQ0IiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTIxMCA2MEwyNDAgODAiIHN0cm9rZT0iI0ZGNDQ0NCIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0yOTAgMTkwQzI5MCAyMDcuNjczIDI3NS42NzMgMjIyIDI1OCAyMjJDMjQwLjMyNyAyMjIgMjI2IDIwNy42NzMgMjI2IDE5MEMyMjYgMTcyLjMyNyAyNDAuMzI3IDE1OCAyNTggMTU4QzI3NS42NzMgMTU4IDI5MCAxNzIuMzI3IDI5MCAxOTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMzEwIDI0MEMzMTAgMjU3LjY3MyAyOTUuNjczIDI3MiAyNzggMjcyQzI2MC4zMjcgMjcyIDI0NiAyNTcuNjczIDI0NiAyNDBDMjQ2IDIyMi4zMjcgMjYwLjMyNyAyMDggMjc4IDIwOEMyOTUuNjczIDIwOCAzMTAgMjIyLjMyNyAzMTAgMjQwWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTI3MiAzMDBDMjcyIDMxNy42NzMgMjU3LjY3MyAzMzIgMjQwIDMzMkMyMjIuMzI3IDMzMiAyMDggMzE3LjY3MyAyMDggMzAwQzIwOCAyODIuMzI3IDIyMi4zMjcgMjY4IDI0MCAyNjhDMjU3LjY3MyAyNjggMjcyIDI4Mi4zMjcgMjcyIDMwMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yMTAgMjIwQzIxMCAyMzcuNjczIDE5NS42NzMgMjUyIDE3OCAyNTJDMTYwLjMyNyAyNTIgMTQ2IDIzNy42NzMgMTQ2IDIyMEMxNDYgMjAyLjMyNyAxNjAuMzI3IDE4OCAxNzggMTg4QzE5NS42NzMgMTg4IDIxMCAyMDIuMzI3IDIxMCAyMjBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=" alt="Bomb">
+                <div class="power-up-count">3</div>
+            </div>
+            <div class="power-up" id="shufflePowerUp">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik04MCAyNDVIMzYwIiBzdHJva2U9IiMzQ0JCRkYiIHN0cm9rZS13aWR0aD0iMjAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNDMyIDE3NUwzNjAgMjQ1TDQzMiAzMTUiIHN0cm9rZT0iIzNDQkJGRiIgc3Ryb2tlLXdpZHRoPSIyMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik04MCAzNzVIMzYwIiBzdHJva2U9IiMzQ0JCRkYiIHN0cm9rZS13aWR0aD0iMjAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNDMyIDMwNUwzNjAgMzc1TDQzMiA0NDUiIHN0cm9rZT0iIzNDQkJGRiIgc3Ryb2tlLXdpZHRoPSIyMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik04MCAxMTVIMzYwIiBzdHJva2U9IiMzQ0JCRkYiIHN0cm9rZS13aWR0aD0iMjAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNNDMyIDQ1TDM2MCAxMTVMNDMyIDE4NSIgc3Ryb2tlPSIjM0NCQkZGIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==" alt="Shuffle">
+                <div class="power-up-count">2</div>
+            </div>
+            <div class="power-up" id="hintPowerUp">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTgwIiBmaWxsPSIjRkZEQTQ0Ii8+CjxwYXRoIGQ9Ik0yNTYgMTQwQzI1NiAxMjYuMTkzIDI0Mi4zNTYgMTE1IDIyNS41IDExNUMyMDguNjQ0IDExNSAxOTUgMTI2LjE5MyAxOTUgMTQwQzE5NSAxNTMuODA3IDIwOC42NDQgMTY1IDIyNS41IDE2NUMyNDIuMzU2IDE2NSAyNTYgMTUzLjgwNyAyNTYgMTQwWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTMxNyAxNDBDMzE3IDEyNi4xOTMgMzAzLjM1NiAxMTUgMjg2LjUgMTE1QzI2OS42NDQgMTE1IDI1NiAxMjYuMTkzIDI1NiAxNDBDMjU2IDE1My44MDcgMjY5LjY0NCAxNjUgMjg2LjUgMTY1QzMwMy4zNTYgMTY1IDMxNyAxNTMuODA3IDMxNyAxNDBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTc1IDMyMEMxOTkgMzYwIDIyMCAzOTAgMjU2IDM5MEMyOTIgMzkwIDMxMy4xOTggMzYwIDMzNyAzMjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K" alt="Hint">
+                <div class="power-up-count">3</div>
+            </div>
+        </div>
+
+        <div class="game-buttons">
+            <button id="backButton">Back</button>
+            <button id="restartButton">Restart</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <h2 id="modalTitle">Level Complete!</h2>
+            <p id="modalMessage">You've completed the level with a great score!</p>
+            <div class="stars" id="modalStars">
+                <div class="star">★</div>
+                <div class="star">★</div>
+                <div class="star">★</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="modalPrimaryButton">Next Level</button>
+                <button id="modalSecondaryButton">Replay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial -->
+    <div class="tutorial-overlay hidden" id="tutorialOverlay">
+        <div class="tutorial-content">
+            <h2 id="tutorialTitle">How to Play</h2>
+            <p id="tutorialText">Swap adjacent items to create matches of 3 or more identical icons.</p>
+            <div class="tutorial-dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <button id="tutorialNextButton">Next</button>
+        </div>
     </div>
 
     <script>
-        function checkCode() {
-            const input = document.getElementById('codeInput');
-            const errorMsg = document.getElementById('errorMsg');
-            const rawValue = input.value.replace(/\s/g, '');
-            
-            if(rawValue === '1033') {
-                window.location.href = 'https://vk.com/club229478724'; // Обманка
-            } 
-            else if(rawValue === '666') {
-                window.location.href = 'https://t.me/+i3cCzUiddXU5Y2Ri'; // Настоящая группа
+        // Game state
+        const gameState = {
+            grid: [],
+            gridSize: 8,
+            selectedCell: null,
+            score: 0,
+            movesLeft: 15,
+            currentLevel: 1,
+            isSwapping: false,
+            isProcessingMatches: false,
+            isAnimating: false,
+            targets: {},
+            maxLevels: 20,
+            unlockedLevels: 1,
+            levelStars: {},
+            specialItems: [],
+            activePowerUp: null,
+            powerUps: {
+                bomb: 3,
+                shuffle: 2,
+                hint: 3
+            },
+            isMuted: false,
+            tutorialStep: 0,
+            comboCount: 0,
+            lastMatchTime: 0
+        };
+
+        // Game items (emoji as images due to browser support variations)
+        const gameItems = [
+            { type: 'star', image: 'https://i.postimg.cc/L601T42g/icon1.png' },
+            { type: 'heart', image: 'https://i.postimg.cc/zBjLR8xB/icon2.png' },
+            { type: 'moon', image: 'https://i.postimg.cc/SRxn63PG/icon3.png' },
+            { type: 'star2', image: 'https://i.postimg.cc/wM470F8Y/icon4.png' },
+            { type: 'cloud', image: 'https://i.postimg.cc/BZmLSZ87/icon5.png' },
+            { type: 'flower', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik02NCA1MS41QzY0IDQwLjE3IDU0LjgzIDMxIDQzLjUgMzFDMzIuMTcgMzEgMjMgNDAuMTcgMjMgNTEuNUMyMyA2Mi44MyAzMi4xNyA3MiA0My41IDcyQzU0LjgzIDcyIDY0IDYyLjgzIDY0IDUxLjVaIiBmaWxsPSIjRkY4MEZGIi8+CjxwYXRoIGQ9Ik0xMDUgNTEuNUMxMDUgNDAuMTcgOTUuODMgMzEgODQuNSAzMUM3My4xNyAzMSA2NCA0MC4xNyA2NCA1MS41QzY0IDYyLjgzIDczLjE3IDcyIDg0LjUgNzJDOTUuODMgNzIgMTA1IDYyLjgzIDEwNSA1MS41WiIgZmlsbD0iI0ZGODA4MCIvPgo8cGF0aCBkPSJNNjQuNSA1MkM3NS44MyA1MiA4NSA0Mi44MyA4NSAzMS41Qzg1IDIwLjE3IDc1LjgzIDExIDY0LjUgMTFDNTMuMTcgMTEgNDQgMjAuMTcgNDQgMzEuNUM0NCA0Mi44MyA1My4xNyA1MiA2NC41IDUyWiIgZmlsbD0iI0ZGRkY4MCIvPgo8cGF0aCBkPSJNNjQuNSA5M0M3NS44MyA5MyA4NSA4My44MyA4NSA3Mi41Qzg1IDYxLjE3IDc1LjgzIDUyIDY0LjUgNTJDNTMuMTcgNTIgNDQgNjEuMTcgNDQgNzIuNUM0NCA4My44MyA1My4xNyA5MyA2NC41IDkzWiIgZmlsbD0iIzgwRkY4MCIvPgo8Y2lyY2xlIGN4PSI2NC41IiBjeT0iNTIuNSIgcj0iMTEuNSIgZmlsbD0iI0ZGQ0MwMCIvPgo8L3N2Zz4K' },
+        ];
+
+        // Level data
+        const levels = [
+            {
+                target: { star: 20 },
+                moves: 15,
+                gridSize: 6,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud']
+            },
+            {
+                target: { heart: 15, star: 15 },
+                moves: 18,
+                gridSize: 6,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud']
+            },
+            {
+                target: { moon: 25 },
+                moves: 20,
+                gridSize: 7,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 20, heart: 20, moon: 10 },
+                moves: 22,
+                gridSize: 7,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star2: 30, cloud: 15 },
+                moves: 25,
+                gridSize: 7,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { flower: 20 },
+                moves: 20,
+                gridSize: 7,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { heart: 25, flower: 15 },
+                moves: 24,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 20, moon: 20, cloud: 20 },
+                moves: 30,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star2: 40 },
+                moves: 25,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { heart: 30, cloud: 25 },
+                moves: 28,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 35, flower: 25 },
+                moves: 30,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { moon: 40, star2: 20 },
+                moves: 32,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 30, heart: 30, moon: 30 },
+                moves: 35,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { cloud: 50 },
+                moves: 30,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star2: 40, flower: 30 },
+                moves: 32,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { heart: 45, cloud: 35 },
+                moves: 35,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 40, moon: 40 },
+                moves: 35,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { flower: 50, star2: 25 },
+                moves: 38,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { star: 30, heart: 30, moon: 30, star2: 30 },
+                moves: 40,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
+            },
+            {
+                target: { heart: 50, moon: 50, flower: 30 },
+                moves: 45,
+                gridSize: 8,
+                items: ['star', 'heart', 'moon', 'star2', 'cloud', 'flower']
             }
-            else {
-                errorMsg.style.opacity = '1';
-                input.style.animation = 'shake 0.4s';
-                setTimeout(() => {
-                    input.style.animation = '';
-                    errorMsg.style.opacity = '0';
-                }, 2000);
-                input.value = '';
+        ];
+
+        // Game sounds
+        const sounds = {
+            swap: new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAsAAAVAAAcHBwcKSkpKTY2NjZDQ0NDUFBQUGNjY2NwcHBwfX19fYqKioqXl5eXpKSkpLGxsbHExMTE0dHR0d7e3t7r6+vr+Pj4+P///wAAAAAAAAAAAAAAAExhdmM1OC4xMy4xMDAAAAAAAAAAAAAAAABiAkAAAAAAAABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAALAAACgAACgoQEBAQFhYWFhwcHBwiIiIiKCgoKC4uLi40NDQ0Ojo6OkBAQEBGRkZGTExMTFJSUlJYWFhYXl5eXmRkZGRqampqcHBwcHZ2dnZ8fHx8goKCgoeHh4eNjY2Nk5OTk5mZmZmfn5+fpqamprKysrK5ubm5v7+/v8XFxcXLy8vL0tLS0tjY2Njf39/f5eXl5ezs7Ozy8vLy+fn5+f///wAAAAAAAAAAAAAAAP/7wGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAAPAAAALAAACgAAHBwcHCkpKSk2NjY2Q0NDQ1BQUFBTU1NTYGBgYG1tbW16enp6h4eHh5SUlJShoaGhrq6urrq6urq8vLy8ycnJydDQ0NDd3d3d6urq6vj4+Pj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/7kmRAP8AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU='),
+            match: new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAsAAAVAAAcHBwcKSkpKTY2NjZDQ0NDUFBQUGNjY2NwcHBwfX19fYqKioqXl5eXpKSkpLGxsbHExMTE0dHR0d7e3t7r6+vr+Pj4+P///wAAAAAAAAAAAAAAAExhdmM1OC4xMy4xMDAAAAAAAAAAAAAAAABiAkAAAAAAAABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAALAAACgAACgoQEBAQFhYWFhwcHBwiIiIiKCgoKC4uLi40NDQ0Ojo6OkBAQEBGRkZGTExMTFJSUlJYWFhYXl5eXmRkZGRqampqcHBwcHZ2dnZ8fHx8goKCgoeHh4eNjY2Nk5OTk5mZmZmfn5+fpqamprKysrK5ubm5v7+/v8XFxcXLy8vL0tLS0tjY2Njf39/f5eXl5ezs7Ozy8vLy+fn5+f///wAAAAAAAAAAAAAAAP/7wGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAAPAAAALAAACgAAHBwcHCkpKSk2NjY2Q0NDQ1BQUFBTU1NTYGBgYG1tbW16enp6h4eHh5SUlJShoaGhrq6urrq6urq8vLy8ycnJydDQ0NDd3d3d6urq6vj4+Pj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/7kmRAP8AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU='),
+            levelComplete: new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAsAAAVAAAcHBwcKSkpKTY2NjZDQ0NDUFBQUGNjY2NwcHBwfX19fYqKioqXl5eXpKSkpLGxsbHExMTE0dHR0d7e3t7r6+vr+Pj4+P///wAAAAAAAAAAAAAAAExhdmM1OC4xMy4xMDAAAAAAAAAAAAAAAABiAkAAAAAAAABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAALAAACgAACgoQEBAQFhYWFhwcHBwiIiIiKCgoKC4uLi40NDQ0Ojo6OkBAQEBGRkZGTExMTFJSUlJYWFhYXl5eXmRkZGRqampqcHBwcHZ2dnZ8fHx8goKCgoeHh4eNjY2Nk5OTk5mZmZmfn5+fpqamprKysrK5ubm5v7+/v8XFxcXLy8vL0tLS0tjY2Njf39/f5eXl5ezs7Ozy8vLy+fn5+f///wAAAAAAAAAAAAAAAP/7wGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAAPAAAALAAACgAAHBwcHCkpKSk2NjY2Q0NDQ1BQUFBTU1NTYGBgYG1tbW16enp6h4eHh5SUlJShoaGhrq6urrq6urq8vLy8ycnJydDQ0NDd3d3d6urq6vj4+Pj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/7kmRAP8AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU='),
+            gameOver: new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAsAAAVAAAcHBwcKSkpKTY2NjZDQ0NDUFBQUGNjY2NwcHBwfX19fYqKioqXl5eXpKSkpLGxsbHExMTE0dHR0d7e3t7r6+vr+Pj4+P///wAAAAAAAAAAAAAAAExhdmM1OC4xMy4xMDAAAAAAAAAAAAAAAABiAkAAAAAAAABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAALAAACgAACgoQEBAQFhYWFhwcHBwiIiIiKCgoKC4uLi40NDQ0Ojo6OkBAQEBGRkZGTExMTFJSUlJYWFhYXl5eXmRkZGRqampqcHBwcHZ2dnZ8fHx8goKCgoeHh4eNjY2Nk5OTk5mZmZmfn5+fpqamprKysrK5ubm5v7+/v8XFxcXLy8vL0tLS0tjY2Njf39/f5eXl5ezs7Ozy8vLy+fn5+f///wAAAAAAAAAAAAAAAP/7wGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAAPAAAALAAACgAAHBwcHCkpKSk2NjY2Q0NDQ1BQUFBTU1NTYGBgYG1tbW16enp6h4eHh5SUlJShoaGhrq6urrq6urq8vLy8ycnJydDQ0NDd3d3d6urq6vj4+Pj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/7kmRAP8AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU='),
+            combo: new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAsAAAVAAAcHBwcKSkpKTY2NjZDQ0NDUFBQUGNjY2NwcHBwfX19fYqKioqXl5eXpKSkpLGxsbHExMTE0dHR0d7e3t7r6+vr+Pj4+P///wAAAAAAAAAAAAAAAExhdmM1OC4xMy4xMDAAAAAAAAAAAAAAAABiAkAAAAAAAABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAALAAACgAACgoQEBAQFhYWFhwcHBwiIiIiKCgoKC4uLi40NDQ0Ojo6OkBAQEBGRkZGTExMTFJSUlJYWFhYXl5eXmRkZGRqampqcHBwcHZ2dnZ8fHx8goKCgoeHh4eNjY2Nk5OTk5mZmZmfn5+fpqamprKysrK5ubm5v7+/v8XFxcXLy8vL0tLS0tjY2Njf39/f5eXl5ezs7Ozy8vLy+fn5+f///wAAAAAAAAAAAAAAAP/7wGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAAPAAAALAAACgAAHBwcHCkpKSk2NjY2Q0NDQ1BQUFBTU1NTYGBgYG1tbW16enp6h4eHh5SUlJShoaGhrq6urrq6urq8vLy8ycnJydDQ0NDd3d3d6urq6vj4+Pj///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/7kmRAP8AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=')
+        };
+
+        // DOM Elements
+        const elements = {
+            startScreen: document.getElementById('startScreen'),
+            levelsScreen: document.getElementById('levelsScreen'),
+            gameScreen: document.getElementById('gameScreen'),
+            grid: document.getElementById('grid'),
+            currentLevel: document.getElementById('currentLevel'),
+            levelTarget: document.getElementById('levelTarget'),
+            scoreValue: document.getElementById('scoreValue'),
+            movesLeft: document.getElementById('movesLeft'),
+            progressBar: document.getElementById('progressBar'),
+            modalOverlay: document.getElementById('modalOverlay'),
+            modal: document.getElementById('modal'),
+            modalTitle: document.getElementById('modalTitle'),
+            modalMessage: document.getElementById('modalMessage'),
+            modalStars: document.getElementById('modalStars'),
+            modalPrimaryButton: document.getElementById('modalPrimaryButton'),
+            modalSecondaryButton: document.getElementById('modalSecondaryButton'),
+            startButton: document.getElementById('startButton'),
+            backButton: document.getElementById('backButton'),
+            restartButton: document.getElementById('restartButton'),
+            howToPlayButton: document.getElementById('howToPlayButton'),
+            tutorialOverlay: document.getElementById('tutorialOverlay'),
+            tutorialTitle: document.getElementById('tutorialTitle'),
+            tutorialText: document.getElementById('tutorialText'),
+            tutorialNextButton: document.getElementById('tutorialNextButton'),
+            soundButton: document.querySelector('.sound-button'),
+            bombPowerUp: document.getElementById('bombPowerUp'),
+            shufflePowerUp: document.getElementById('shufflePowerUp'),
+            hintPowerUp: document.getElementById('hintPowerUp')
+        };
+
+        // Initialize the game
+        function initGame() {
+            loadGameState();
+            addEventListeners();
+            updatePowerUpDisplay();
+        }
+
+        // Load saved game state from localStorage
+        function loadGameState() {
+            const savedState = localStorage.getItem('kawaiiMatchState');
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                gameState.unlockedLevels = parsed.unlockedLevels || 1;
+                gameState.levelStars = parsed.levelStars || {};
+                gameState.powerUps = parsed.powerUps || { bomb: 3, shuffle: 2, hint: 3 };
+                gameState.isMuted = parsed.isMuted || false;
+            }
+
+            // Update sound button state
+            if (gameState.isMuted) {
+                elements.soundButton.classList.add('muted');
             }
         }
-        function formatInput(input) { /* ... */ }
+
+        // Save game state to localStorage
+        function saveGameState() {
+            const stateToSave = {
+                unlockedLevels: gameState.unlockedLevels,
+                levelStars: gameState.levelStars,
+                powerUps: gameState.powerUps,
+                isMuted: gameState.isMuted
+            };
+            localStorage.setItem('kawaiiMatchState', JSON.stringify(stateToSave));
+        }
+
+        // Add event listeners
+        function addEventListeners() {
+            elements.startButton.addEventListener('click', showLevelsScreen);
+            elements.backButton.addEventListener('click', showLevelsScreen);
+            elements.restartButton.addEventListener('click', restartLevel);
+            elements.modalPrimaryButton.addEventListener('click', handleModalPrimary);
+            elements.modalSecondaryButton.addEventListener('click', handleModalSecondary);
+            elements.howToPlayButton.addEventListener('click', showTutorial);
+            elements.tutorialNextButton.addEventListener('click', nextTutorialStep);
+            elements.soundButton.addEventListener('click', toggleSound);
+            elements.bombPowerUp.addEventListener('click', activateBombPowerUp);
+            elements.shufflePowerUp.addEventListener('click', activateShufflePowerUp);
+            elements.hintPowerUp.addEventListener('click', activateHintPowerUp);
+        }
+
+        // Toggle sound on/off
+        function toggleSound() {
+            gameState.isMuted = !gameState.isMuted;
+            elements.soundButton.classList.toggle('muted', gameState.isMuted);
+            saveGameState();
+        }
+
+        // Play sound if not muted
+        function playSound(sound) {
+            if (!gameState.isMuted) {
+                sound.currentTime = 0;
+                sound.play();
+            }
+        }
+
+        // Show levels screen
+        function showLevelsScreen() {
+            elements.startScreen.classList.add('hidden');
+            elements.gameScreen.classList.add('hidden');
+            elements.levelsScreen.classList.remove('hidden');
+            
+            // Generate level buttons
+            elements.levelsScreen.innerHTML = '';
+            for (let i = 1; i <= gameState.maxLevels; i++) {
+                const levelButton = document.createElement('div');
+                levelButton.className = `level-button ${i > gameState.unlockedLevels ? 'locked' : ''}`;
+                
+                if (i <= gameState.unlockedLevels) {
+                    levelButton.innerHTML = `
+                        <div class="level-number-display">${i}</div>
+                        <div class="level-stars">
+                            ${generateLevelStars(i)}
+                        </div>
+                    `;
+                    levelButton.addEventListener('click', () => startLevel(i));
+                } else {
+                    levelButton.innerHTML = `
+                        <div class="level-number-display">${i}</div>
+                    `;
+                }
+                
+                elements.levelsScreen.appendChild(levelButton);
+            }
+        }
+
+        // Generate stars HTML for level selection
+        function generateLevelStars(level) {
+            const stars = gameState.levelStars[level] || 0;
+            let starsHtml = '';
+            
+            for (let i = 1; i <= 3; i++) {
+                starsHtml += `<div class="level-star ${i <= stars ? 'filled' : ''}">★</div>`;
+            }
+            
+            return starsHtml;
+        }
+
+        // Start a specific level
+        function startLevel(levelNumber) {
+            gameState.currentLevel = levelNumber;
+            elements.levelsScreen.classList.add('hidden');
+            elements.gameScreen.classList.remove('hidden');
+            
+            const levelData = levels[levelNumber - 1];
+            gameState.gridSize = levelData.gridSize;
+            gameState.movesLeft = levelData.moves;
+            gameState.score = 0;
+            gameState.targets = {...levelData.target};
+            
+            // Update UI
+            elements.currentLevel.textContent = levelNumber;
+            elements.movesLeft.textContent = gameState.movesLeft;
+            elements.scoreValue.textContent = gameState.score;
+            updateTargetDisplay();
+            updateProgressBar();
+            
+            // Create the grid
+            createGrid();
+            
+            // Fill the grid with items
+            generateGrid(levelData.items);
+        }
+
+        // Create the grid elements
+        function createGrid() {
+            elements.grid.innerHTML = '';
+            elements.grid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, 1fr)`;
+            elements.grid.style.gridTemplateRows = `repeat(${gameState.gridSize}, 1fr)`;
+            
+            gameState.grid = [];
+            
+            for (let row = 0; row < gameState.gridSize; row++) {
+                gameState.grid[row] = [];
+                
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    cell.addEventListener('click', () => handleCellClick(row, col));
+                    
+                    elements.grid.appendChild(cell);
+                    gameState.grid[row][col] = null;
+                }
+            }
+        }
+
+        // Generate grid with items
+        function generateGrid(itemTypes) {
+            // Clear any existing items
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    gameState.grid[row][col] = null;
+                }
+            }
+            
+            // Fill the grid with random items
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    let itemType;
+                    
+                    // Keep generating random items until we find one that doesn't create a match
+                    do {
+                        const randomIndex = Math.floor(Math.random() * itemTypes.length);
+                        itemType = itemTypes[randomIndex];
+                    } while (
+                        (row >= 2 && 
+                         gameState.grid[row-1][col] && 
+                         gameState.grid[row-2][col] && 
+                         gameState.grid[row-1][col].type === itemType && 
+                         gameState.grid[row-2][col].type === itemType) || 
+                        (col >= 2 && 
+                         gameState.grid[row][col-1] && 
+                         gameState.grid[row][col-2] && 
+                         gameState.grid[row][col-1].type === itemType && 
+                         gameState.grid[row][col-2].type === itemType)
+                    );
+                    
+                    // Create the item
+                    const item = findItemByType(itemType);
+                    gameState.grid[row][col] = { type: item.type, image: item.image };
+                }
+            }
+            
+            renderGrid();
+            
+            // Check if there are possible moves
+            if (!hasPossibleMoves()) {
+                shuffleGrid();
+            }
+        }
+
+        // Find item by type
+        function findItemByType(type) {
+            return gameItems.find(item => item.type === type);
+        }
+
+        // Render the current grid state
+        function renderGrid() {
+            const cells = elements.grid.getElementsByClassName('cell');
+            
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    const index = row * gameState.gridSize + col;
+                    const cell = cells[index];
+                    
+                    // Clear the cell
+                    cell.innerHTML = '';
+                    
+                    // Add the item if it exists
+                    const item = gameState.grid[row][col];
+                    if (item) {
+                        const img = document.createElement('img');
+                        img.src = item.image;
+                        img.alt = item.type;
+                        cell.appendChild(img);
+                    }
+                }
+            }
+        }
+
+        // Handle cell click
+        function handleCellClick(row, col) {
+            // If a power-up is active, handle it differently
+            if (gameState.activePowerUp) {
+                if (gameState.activePowerUp === 'bomb') {
+                    useBombPowerUp(row, col);
+                }
+                return;
+            }
+            
+            // Don't allow clicks if animations are running
+            if (gameState.isAnimating || gameState.isSwapping || gameState.isProcessingMatches) {
+                return;
+            }
+            
+            // Get the cell element
+            const cell = elements.grid.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            
+            // If no cell is selected, select this one
+            if (!gameState.selectedCell) {
+                // Only select cells with items
+                if (gameState.grid[row][col]) {
+                    gameState.selectedCell = { row, col };
+                    cell.classList.add('selected');
+                }
+            } else {
+                // If this is the already selected cell, deselect it
+                if (gameState.selectedCell.row === row && gameState.selectedCell.col === col) {
+                    const selectedCell = elements.grid.querySelector(`[data-row="${gameState.selectedCell.row}"][data-col="${gameState.selectedCell.col}"]`);
+                    selectedCell.classList.remove('selected');
+                    gameState.selectedCell = null;
+                } 
+                // If this is adjacent to the selected cell, try to swap
+                else if (isAdjacent(gameState.selectedCell.row, gameState.selectedCell.col, row, col)) {
+                    const selectedCell = elements.grid.querySelector(`[data-row="${gameState.selectedCell.row}"][data-col="${gameState.selectedCell.col}"]`);
+                    selectedCell.classList.remove('selected');
+                    
+                    // Try to swap the items
+                    swapItems(gameState.selectedCell.row, gameState.selectedCell.col, row, col);
+                    gameState.selectedCell = null;
+                } 
+                // If not adjacent, deselect the old one and select this one
+                else {
+                    const selectedCell = elements.grid.querySelector(`[data-row="${gameState.selectedCell.row}"][data-col="${gameState.selectedCell.col}"]`);
+                    selectedCell.classList.remove('selected');
+                    
+                    // Only select cells with items
+                    if (gameState.grid[row][col]) {
+                        gameState.selectedCell = { row, col };
+                        cell.classList.add('selected');
+                    } else {
+                        gameState.selectedCell = null;
+                    }
+                }
+            }
+        }
+
+        // Check if two cells are adjacent
+        function isAdjacent(row1, col1, row2, col2) {
+            return (
+                (Math.abs(row1 - row2) === 1 && col1 === col2) || 
+                (Math.abs(col1 - col2) === 1 && row1 === row2)
+            );
+        }
+
+        // Swap two items
+        function swapItems(row1, col1, row2, col2) {
+            // Don't allow swaps if processing or animating
+            if (gameState.isSwapping || gameState.isProcessingMatches || gameState.isAnimating) {
+                return;
+            }
+            
+            gameState.isSwapping = true;
+            
+            // Temporarily swap items to check if it would create a match
+            const temp = gameState.grid[row1][col1];
+            gameState.grid[row1][col1] = gameState.grid[row2][col2];
+            gameState.grid[row2][col2] = temp;
+            
+            // Check if the swap creates a match
+            const matchesAfterSwap = findMatches();
+            
+            if (matchesAfterSwap.length > 0) {
+                // Play swap sound
+                playSound(sounds.swap);
+                
+                // Render the grid to show the swap
+                renderGrid();
+                
+                // Process the matches
+                setTimeout(() => {
+                    gameState.isSwapping = false;
+                    processMatches(matchesAfterSwap);
+                    
+                    // Decrement moves
+                    gameState.movesLeft--;
+                    elements.movesLeft.textContent = gameState.movesLeft;
+                    
+                    // Check if the game is over
+                    checkGameState();
+                }, 300);
+            } else {
+                // Swap back since no match was created
+                temp = gameState.grid[row1][col1];
+                gameState.grid[row1][col1] = gameState.grid[row2][col2];
+                gameState.grid[row2][col2] = temp;
+                
+                // Show a brief animation to indicate the invalid move
+                const cell1 = elements.grid.querySelector(`[data-row="${row1}"][data-col="${col1}"]`);
+                const cell2 = elements.grid.querySelector(`[data-row="${row2}"][data-col="${col2}"]`);
+                
+                cell1.classList.add('invalid');
+                cell2.classList.add('invalid');
+                
+                setTimeout(() => {
+                    cell1.classList.remove('invalid');
+                    cell2.classList.remove('invalid');
+                    gameState.isSwapping = false;
+                }, 300);
+            }
+        }
+
+        // Find all matches in the grid
+        function findMatches() {
+            const matches = [];
+            
+            // Check horizontal matches
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize - 2; col++) {
+                    const item1 = gameState.grid[row][col];
+                    const item2 = gameState.grid[row][col + 1];
+                    const item3 = gameState.grid[row][col + 2];
+                    
+                    if (item1 && item2 && item3 && item1.type === item2.type && item2.type === item3.type) {
+                        // Find how far this match extends
+                        let matchLength = 3;
+                        while (col + matchLength < gameState.gridSize && 
+                              gameState.grid[row][col + matchLength] && 
+                              gameState.grid[row][col + matchLength].type === item1.type) {
+                            matchLength++;
+                        }
+                        
+                        // Add all cells in this match
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({ row, col: col + i, type: item1.type });
+                        }
+                        
+                        // Skip the columns we've already matched
+                        col += matchLength - 1;
+                    }
+                }
+            }
+            
+            // Check vertical matches
+            for (let col = 0; col < gameState.gridSize; col++) {
+                for (let row = 0; row < gameState.gridSize - 2; row++) {
+                    const item1 = gameState.grid[row][col];
+                    const item2 = gameState.grid[row + 1][col];
+                    const item3 = gameState.grid[row + 2][col];
+                    
+                    if (item1 && item2 && item3 && item1.type === item2.type && item2.type === item3.type) {
+                        // Find how far this match extends
+                        let matchLength = 3;
+                        while (row + matchLength < gameState.gridSize && 
+                              gameState.grid[row + matchLength][col] && 
+                              gameState.grid[row + matchLength][col].type === item1.type) {
+                            matchLength++;
+                        }
+                        
+                        // Add all cells in this match
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({ row: row + i, col, type: item1.type });
+                        }
+                        
+                        // Skip the rows we've already matched
+                        row += matchLength - 1;
+                    }
+                }
+            }
+            
+            // Remove duplicates (when a cell is part of both horizontal and vertical match)
+            const uniqueMatches = [];
+            const matchKeys = new Set();
+            
+            for (const match of matches) {
+                const key = `${match.row},${match.col}`;
+                if (!matchKeys.has(key)) {
+                    matchKeys.add(key);
+                    uniqueMatches.push(match);
+                }
+            }
+            
+            return uniqueMatches;
+        }
+
+        // Process matches
+        function processMatches(matches) {
+            if (matches.length === 0) return;
+            
+            gameState.isProcessingMatches = true;
+            
+            // Play match sound
+            playSound(sounds.match);
+            
+            // Add match animation class to cells
+            for (const match of matches) {
+                const cell = elements.grid.querySelector(`[data-row="${match.row}"][data-col="${match.col}"]`);
+                cell.classList.add('matched');
+            }
+            
+            // Detect combo (matches found within short time of previous matches)
+            const now = Date.now();
+            if (now - gameState.lastMatchTime < 2000) {
+                gameState.comboCount++;
+                
+                // Show combo text
+                if (gameState.comboCount > 1) {
+                    showComboText(gameState.comboCount);
+                    
+                    // Play combo sound
+                    playSound(sounds.combo);
+                }
+            } else {
+                gameState.comboCount = 1;
+            }
+            
+            gameState.lastMatchTime = now;
+            
+            // Update score and targets
+            updateScoreAndTargets(matches);
+            
+            // Wait for animation to complete
+            setTimeout(() => {
+                // Remove matched items
+                for (const match of matches) {
+                    gameState.grid[match.row][match.col] = null;
+                }
+                
+                // Remove animation class from cells
+                const cells = elements.grid.getElementsByClassName('cell');
+                for (const cell of cells) {
+                    cell.classList.remove('matched');
+                }
+                
+                // Move items down to fill the gaps
+                fillEmptySpaces();
+                
+                // Check for new matches after items have moved
+                setTimeout(() => {
+                    const newMatches = findMatches();
+                    
+                    if (newMatches.length > 0) {
+                        processMatches(newMatches);
+                    } else {
+                        gameState.isProcessingMatches = false;
+                        
+                        // Check if there are possible moves
+                        if (!hasPossibleMoves()) {
+                            shuffleGrid();
+                        }
+                        
+                        // Check if the level is complete
+                        checkGameState();
+                    }
+                }, 500);
+            }, 500);
+        }
+
+        // Show combo text
+        function showComboText(comboCount) {
+            const comboText = document.createElement('div');
+            comboText.className = 'combo-text';
+            comboText.textContent = `Combo x${comboCount}!`;
+            
+            // Position the combo text in a random position near the center of the grid
+            const gridRect = elements.grid.getBoundingClientRect();
+            const x = gridRect.left + gridRect.width / 2 - 50 + (Math.random() * 100 - 50);
+            const y = gridRect.top + gridRect.height / 2 - 50 + (Math.random() * 100 - 50);
+            
+            comboText.style.left = `${x}px`;
+            comboText.style.top = `${y}px`;
+            
+            document.body.appendChild(comboText);
+            
+            // Remove the combo text after animation completes
+            setTimeout(() => {
+                comboText.remove();
+            }, 1500);
+        }
+
+        // Update score and targets based on matched items
+        function updateScoreAndTargets(matches) {
+            // Count matches by type
+            const matchesByType = {};
+            for (const match of matches) {
+                matchesByType[match.type] = (matchesByType[match.type] || 0) + 1;
+            }
+            
+            // Add score based on matches (more matches = more points per item)
+            const basePoints = 10;
+            const comboMultiplier = Math.min(3, gameState.comboCount);
+            const matchMultiplier = Math.min(3, Math.floor(matches.length / 3));
+            const totalPoints = matches.length * basePoints * comboMultiplier * matchMultiplier;
+            
+            gameState.score += totalPoints;
+            elements.scoreValue.textContent = gameState.score;
+            
+            // Update targets
+            for (const type in matchesByType) {
+                if (gameState.targets[type]) {
+                    gameState.targets[type] = Math.max(0, gameState.targets[type] - matchesByType[type]);
+                }
+            }
+            
+            // Update target display
+            updateTargetDisplay();
+            updateProgressBar();
+        }
+
+        // Fill empty spaces by moving items down
+        function fillEmptySpaces() {
+            // Move existing items down
+            for (let col = 0; col < gameState.gridSize; col++) {
+                for (let row = gameState.gridSize - 1; row >= 0; row--) {
+                    if (!gameState.grid[row][col]) {
+                        // Find the next non-null item above
+                        for (let above = row - 1; above >= 0; above--) {
+                            if (gameState.grid[above][col]) {
+                                // Move the item down
+                                gameState.grid[row][col] = gameState.grid[above][col];
+                                gameState.grid[above][col] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Add new items at the top where needed
+            const levelData = levels[gameState.currentLevel - 1];
+            const itemTypes = levelData.items;
+            
+            for (let col = 0; col < gameState.gridSize; col++) {
+                for (let row = 0; row < gameState.gridSize; row++) {
+                    if (!gameState.grid[row][col]) {
+                        const randomIndex = Math.floor(Math.random() * itemTypes.length);
+                        const itemType = itemTypes[randomIndex];
+                        const item = findItemByType(itemType);
+                        gameState.grid[row][col] = { type: item.type, image: item.image };
+                    }
+                }
+            }
+            
+            // Render the updated grid
+            renderGrid();
+        }
+
+        // Check if there are possible moves
+        function hasPossibleMoves() {
+            // Check each cell
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    // Try swapping with right neighbor
+                    if (col < gameState.gridSize - 1) {
+                        // Swap
+                        const temp = gameState.grid[row][col];
+                        gameState.grid[row][col] = gameState.grid[row][col + 1];
+                        gameState.grid[row][col + 1] = temp;
+                        
+                        // Check for matches
+                        const matches = findMatches();
+                        
+                        // Swap back
+                        gameState.grid[row][col + 1] = gameState.grid[row][col];
+                        gameState.grid[row][col] = temp;
+                        
+                        if (matches.length > 0) {
+                            return true;
+                        }
+                    }
+                    
+                    // Try swapping with bottom neighbor
+                    if (row < gameState.gridSize - 1) {
+                        // Swap
+                        const temp = gameState.grid[row][col];
+                        gameState.grid[row][col] = gameState.grid[row + 1][col];
+                        gameState.grid[row + 1][col] = temp;
+                        
+                        // Check for matches
+                        const matches = findMatches();
+                        
+                        // Swap back
+                        gameState.grid[row + 1][col] = gameState.grid[row][col];
+                        gameState.grid[row][col] = temp;
+                        
+                        if (matches.length > 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        // Find a hint (a possible move)
+        function findHint() {
+            const hints = [];
+            
+            // Check each cell
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    // Try swapping with right neighbor
+                    if (col < gameState.gridSize - 1) {
+                        // Swap
+                        const temp = gameState.grid[row][col];
+                        gameState.grid[row][col] = gameState.grid[row][col + 1];
+                        gameState.grid[row][col + 1] = temp;
+                        
+                        // Check for matches
+                        const matches = findMatches();
+                        
+                        // Swap back
+                        gameState.grid[row][col + 1] = gameState.grid[row][col];
+                        gameState.grid[row][col] = temp;
+                        
+                        if (matches.length > 0) {
+                            hints.push({ row1: row, col1: col, row2: row, col2: col + 1 });
+                        }
+                    }
+                    
+                    // Try swapping with bottom neighbor
+                    if (row < gameState.gridSize - 1) {
+                        // Swap
+                        const temp = gameState.grid[row][col];
+                        gameState.grid[row][col] = gameState.grid[row + 1][col];
+                        gameState.grid[row + 1][col] = temp;
+                        
+                        // Check for matches
+                        const matches = findMatches();
+                        
+                        // Swap back
+                        gameState.grid[row + 1][col] = gameState.grid[row][col];
+                        gameState.grid[row][col] = temp;
+                        
+                        if (matches.length > 0) {
+                            hints.push({ row1: row, col1: col, row2: row + 1, col2: col });
+                        }
+                    }
+                }
+            }
+            
+            return hints.length > 0 ? hints[Math.floor(Math.random() * hints.length)] : null;
+        }
+
+        // Shuffle the grid
+        function shuffleGrid() {
+            // Collect all items
+            const items = [];
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    if (gameState.grid[row][col]) {
+                        items.push(gameState.grid[row][col]);
+                    }
+                }
+            }
+            
+            // Shuffle the items
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+            
+            // Place items back on the grid
+            let itemIndex = 0;
+            for (let row = 0; row < gameState.gridSize; row++) {
+                for (let col = 0; col < gameState.gridSize; col++) {
+                    gameState.grid[row][col] = items[itemIndex++];
+                }
+            }
+            
+            // Render the updated grid
+            renderGrid();
+            
+            // Check if there are possible moves after shuffling
+            if (!hasPossibleMoves()) {
+                // If still no moves, shuffle again
+                shuffleGrid();
+            }
+        }
+
+        // Update target display
+        function updateTargetDisplay() {
+            let targetText = '';
+            for (const type in gameState.targets) {
+                if (gameState.targets[type] > 0) {
+                    const item = findItemByType(type);
+                    targetText += `${gameState.targets[type]}x ${type} `;
+                }
+            }
+            
+            elements.levelTarget.textContent = targetText || 'All targets completed!';
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            // Calculate progress as percentage of targets completed
+            let totalTargets = 0;
+            let remainingTargets = 0;
+            
+            for (const type in gameState.targets) {
+                const initial = levels[gameState.currentLevel - 1].target[type];
+                totalTargets += initial;
+                remainingTargets += gameState.targets[type];
+            }
+            
+            const progress = totalTargets > 0 ? 
+                Math.min(100, Math.max(0, (totalTargets - remainingTargets) / totalTargets * 100)) : 100;
+            
+            elements.progressBar.style.width = `${progress}%`;
+        }
+
+        // Check game state (win/lose conditions)
+        function checkGameState() {
+            // Check if all targets are completed
+            const allTargetsCompleted = Object.values(gameState.targets).every(value => value <= 0);
+            
+            if (allTargetsCompleted) {
+                // Level complete!
+                setTimeout(() => {
+                    showLevelCompleteModal();
+                }, 500);
+            }
+            // Check if out of moves
+            else if (gameState.movesLeft <= 0) {
+                // Game over!
+                setTimeout(() => {
+                    showGameOverModal();
+                }, 500);
+            }
+        }
+
+        // Show level complete modal
+        function showLevelCompleteModal() {
+            // Play level complete sound
+            playSound(sounds.levelComplete);
+            
+            // Calculate stars based on remaining moves and score
+            const levelData = levels[gameState.currentLevel - 1];
+            const totalMoves = levelData.moves;
+            const movesUsed = totalMoves - gameState.movesLeft;
+            const movePercentage = movesUsed / totalMoves;
+            
+            let stars = 3;
+            if (movePercentage > 0.9) {
+                stars = 1;
+            } else if (movePercentage > 0.7) {
+                stars = 2;
+            }
+            
+            // Update level stars if better than previous
+            const currentStars = gameState.levelStars[gameState.currentLevel] || 0;
+            if (stars > currentStars) {
+                gameState.levelStars[gameState.currentLevel] = stars;
+            }
+            
+            // Unlock next level
+            if (gameState.currentLevel === gameState.unlockedLevels && gameState.currentLevel < gameState.maxLevels) {
+                gameState.unlockedLevels++;
+            }
+            
+            // Save game state
+            saveGameState();
+            
+            // Update modal content
+            elements.modalTitle.textContent = 'Level Complete!';
+            elements.modalMessage.textContent = `Great job! You completed the level with ${gameState.score} points and ${gameState.movesLeft} moves remaining.`;
+            
+            // Update stars
+            elements.modalStars.innerHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                const starElement = document.createElement('div');
+                starElement.className = `star ${i <= stars ? 'filled' : ''}`;
+                starElement.textContent = '★';
+                elements.modalStars.appendChild(starElement);
+            }
+            
+            // Set button text
+            if (gameState.currentLevel < gameState.maxLevels) {
+                elements.modalPrimaryButton.textContent = 'Next Level';
+            } else {
+                elements.modalPrimaryButton.textContent = 'Back to Levels';
+            }
+            elements.modalSecondaryButton.textContent = 'Replay';
+            
+            // Show the modal
+            elements.modalOverlay.classList.add('active');
+        }
+
+        // Show game over modal
+        function showGameOverModal() {
+            // Play game over sound
+            playSound(sounds.gameOver);
+            
+            // Update modal content
+            elements.modalTitle.textContent = 'Level Failed';
+            elements.modalMessage.textContent = `You ran out of moves! Try again to complete the level.`;
+            
+            // Hide stars
+            elements.modalStars.innerHTML = '';
+            
+            // Set button text
+            elements.modalPrimaryButton.textContent = 'Try Again';
+            elements.modalSecondaryButton.textContent = 'Back to Levels';
+            
+            // Show the modal
+            elements.modalOverlay.classList.add('active');
+        }
+
+        // Handle primary modal button
+        function handleModalPrimary() {
+            elements.modalOverlay.classList.remove('active');
+            
+            // Check which modal was shown
+            if (elements.modalTitle.textContent === 'Level Complete!') {
+                if (gameState.currentLevel < gameState.maxLevels) {
+                    // Start next level
+                    startLevel(gameState.currentLevel + 1);
+                } else {
+                    // Back to levels if last level
+                    showLevelsScreen();
+                }
+            } else {
+                // Restart level
+                restartLevel();
+            }
+        }
+
+        // Handle secondary modal button
+        function handleModalSecondary() {
+            elements.modalOverlay.classList.remove('active');
+            
+            // Check which modal was shown
+            if (elements.modalTitle.textContent === 'Level Complete!') {
+                // Replay level
+                restartLevel();
+            } else {
+                // Back to levels
+                showLevelsScreen();
+            }
+        }
+
+        // Restart the current level
+        function restartLevel() {
+            startLevel(gameState.currentLevel);
+        }
+
+        // Show tutorial
+        function showTutorial() {
+            gameState.tutorialStep = 0;
+            elements.tutorialOverlay.classList.remove('hidden');
+            updateTutorialStep();
+        }
+
+        // Next tutorial step
+        function nextTutorialStep() {
+            gameState.tutorialStep++;
+            
+            if (gameState.tutorialStep >= 4) {
+                // End tutorial
+                elements.tutorialOverlay.classList.add('hidden');
+            } else {
+                updateTutorialStep();
+            }
+        }
+
+        // Update tutorial step content
+        function updateTutorialStep() {
+            const tutorialSteps = [
+                {
+                    title: 'How to Play',
+                    text: 'Swap adjacent items to create matches of 3 or more identical icons. Matches will be removed and new items will fall from the top.'
+                },
+                {
+                    title: 'Level Goals',
+                    text: 'Each level has specific goals to complete, like matching a certain number of specific items. Complete all goals before running out of moves!'
+                },
+                {
+                    title: 'Power-ups',
+                    text: 'Use power-ups to help you complete difficult levels! The bomb removes items in an area, shuffle rearranges the board, and hint shows a possible move.'
+                },
+                {
+                    title: 'Stars & Progress',
+                    text: 'Earn up to 3 stars per level based on your performance. Complete levels to unlock new ones and progress through the game!'
+                }
+            ];
+            
+            const step = tutorialSteps[gameState.tutorialStep];
+            
+            elements.tutorialTitle.textContent = step.title;
+            elements.tutorialText.textContent = step.text;
+            
+            // Update dots
+            const dots = elements.tutorialOverlay.querySelectorAll('.dot');
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.toggle('active', i === gameState.tutorialStep);
+            }
+            
+            // Update button
+            if (gameState.tutorialStep === tutorialSteps.length - 1) {
+                elements.tutorialNextButton.textContent = 'Got it!';
+            } else {
+                elements.tutorialNextButton.textContent = 'Next';
+            }
+        }
+
+        // Activate bomb power-up
+        function activateBombPowerUp() {
+            if (gameState.powerUps.bomb <= 0 || gameState.isAnimating || gameState.isSwapping || gameState.isProcessingMatches) {
+                return;
+            }
+            
+            // Deactivate any active power-up
+            deactivatePowerUps();
+            
+            // Activate bomb power-up
+            gameState.activePowerUp = 'bomb';
+            elements.bombPowerUp.classList.add('active');
+            
+            // Add a message to show what to do
+            showMessage('Select a cell to use the bomb!');
+        }
+
+        // Use bomb power-up
+        function useBombPowerUp(row, col) {
+            if (gameState.activePowerUp !== 'bomb') return;
+            
+            // Deactivate the power-up
+            deactivatePowerUps();
+            
+            // Use one bomb
+            gameState.powerUps.bomb--;
+            updatePowerUpDisplay();
+            saveGameState();
+            
+            // Get cells in a 3x3 area
+            const cellsToRemove = [];
+            
+            for (let r = Math.max(0, row - 1); r <= Math.min(gameState.gridSize - 1, row + 1); r++) {
+                for (let c = Math.max(0, col - 1); c <= Math.min(gameState.gridSize - 1, col + 1); c++) {
+                    if (gameState.grid[r][c]) {
+                        cellsToRemove.push({ row: r, col: c, type: gameState.grid[r][c].type });
+                    }
+                }
+            }
+            
+            // Process the removed cells as if they were a match
+            if (cellsToRemove.length > 0) {
+                playSound(sounds.match);
+                processMatches(cellsToRemove);
+            }
+        }
+
+        // Activate shuffle power-up
+        function activateShufflePowerUp() {
+            if (gameState.powerUps.shuffle <= 0 || gameState.isAnimating || gameState.isSwapping || gameState.isProcessingMatches) {
+                return;
+            }
+            
+            // Deactivate any active power-up
+            deactivatePowerUps();
+            
+            // Use one shuffle
+            gameState.powerUps.shuffle--;
+            updatePowerUpDisplay();
+            saveGameState();
+            
+            // Shuffle the grid
+            shuffleGrid();
+            showMessage('Board shuffled!');
+        }
+
+        // Activate hint power-up
+        function activateHintPowerUp() {
+            if (gameState.powerUps.hint <= 0 || gameState.isAnimating || gameState.isSwapping || gameState.isProcessingMatches) {
+                return;
+            }
+            
+            // Deactivate any active power-up
+            deactivatePowerUps();
+            
+            // Use one hint
+            gameState.powerUps.hint--;
+            updatePowerUpDisplay();
+            saveGameState();
+            
+            // Find a hint
+            const hint = findHint();
+            
+            if (hint) {
+                // Show the hint
+                const cell1 = elements.grid.querySelector(`[data-row="${hint.row1}"][data-col="${hint.col1}"]`);
+                const cell2 = elements.grid.querySelector(`[data-row="${hint.row2}"][data-col="${hint.col2}"]`);
+                
+                cell1.classList.add('hint');
+                cell2.classList.add('hint');
+                
+                setTimeout(() => {
+                    cell1.classList.remove('hint');
+                    cell2.classList.remove('hint');
+                }, 2000);
+            } else {
+                showMessage('No possible moves found! Try shuffling.');
+            }
+        }
+
+        // Deactivate all power-ups
+        function deactivatePowerUps() {
+            gameState.activePowerUp = null;
+            elements.bombPowerUp.classList.remove('active');
+            elements.shufflePowerUp.classList.remove('active');
+            elements.hintPowerUp.classList.remove('active');
+        }
+
+        // Update power-up display
+        function updatePowerUpDisplay() {
+            document.querySelector('#bombPowerUp .power-up-count').textContent = gameState.powerUps.bomb;
+            document.querySelector('#shufflePowerUp .power-up-count').textContent = gameState.powerUps.shuffle;
+            document.querySelector('#hintPowerUp .power-up-count').textContent = gameState.powerUps.hint;
+            
+            // Disable power-ups if none left
+            elements.bombPowerUp.classList.toggle('disabled', gameState.powerUps.bomb <= 0);
+            elements.shufflePowerUp.classList.toggle('disabled', gameState.powerUps.shuffle <= 0);
+            elements.hintPowerUp.classList.toggle('disabled', gameState.powerUps.hint <= 0);
+        }
+
+        // Show a temporary message
+        function showMessage(text) {
+            const message = document.createElement('div');
+            message.className = 'combo-text';
+            message.textContent = text;
+            message.style.fontSize = '18px';
+            
+            // Position the message near the top of the grid
+            const gridRect = elements.grid.getBoundingClientRect();
+            const x = gridRect.left + gridRect.width / 2 - 100;
+            const y = gridRect.top - 40;
+            
+            message.style.left = `${x}px`;
+            message.style.top = `${y}px`;
+            
+            document.body.appendChild(message);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                message.remove();
+            }, 1500);
+        }
+
+        // Initialize the game
+        initGame();
     </script>
 </body>
 </html>
